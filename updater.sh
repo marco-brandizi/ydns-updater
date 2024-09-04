@@ -67,7 +67,11 @@ update_ip_address () {
 			https://ydns.io/api/v1/update/?host=${host}\&ip=${current_ip}`
 	done
 
-	echo ${ret//[[:space:]]/}
+  # MB: this doesn't work with the current API output, since now it contains the IP too
+	#echo ${ret//[[:space:]]/}
+	
+	echo "$ret" | sed -E s/'^(.*)[[:space:]].*'/'\1'/
+
 }
 
 ## Shorthand function to display version
@@ -170,6 +174,12 @@ if [ "$current_ip" != "$last_ip" ]; then
 
 		ok)
 			write_msg "YDNS host updated successfully: $YDNS_HOST ($current_ip)"
+			echo "$current_ip" > $YDNS_LASTIP_FILE
+			exit 0
+			;;
+
+    nochg)
+			write_msg "YDNS API replied no change for: $YDNS_HOST ($current_ip)"
 			echo "$current_ip" > $YDNS_LASTIP_FILE
 			exit 0
 			;;
